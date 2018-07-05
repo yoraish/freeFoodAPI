@@ -3,6 +3,20 @@ print( "Content-type: text/html\n")
 import cgitb
 import cgi 
 import details 
+
+#globals
+# for roomKeywords, the keys are words that might be found in emails, and the actual values are the room names that will
+# be inserted to the DB
+roomKeywords = {'kresge':'kresge',
+                'W20': 'W20',
+                'verdes': 'W20',
+                'stud': 'W20',
+                'student center': 'W20',
+                'student centre': 'W20',
+                'stata': 'stata',
+}
+
+
 cgitb.enable()
 #command below takes the arguements from the get request and puts them in some sort of a dictionary
 inDataDict = cgi.FieldStorage()
@@ -94,7 +108,7 @@ def getRoomNumberFromEmail(message, senderName):
                 middleIndex =  dashIndex
                 # make sure that the dash is before the beginning of the signature
                 if middleIndex > signatureStart:
-                    return "No room in email"
+                    break
                 beginIndex = middleIndex
                 while (message[beginIndex] != " ") and (message[beginIndex] not in lowerCaseLetters):
                     beginIndex -= 1
@@ -108,9 +122,13 @@ def getRoomNumberFromEmail(message, senderName):
                         return roomNumber
                 dashIndex = message.find('-',dashIndex+1)
                 if dashIndex == -1:                        
-                    return "No room in email"
-        else:
-            return "No room in email"
+                    break
+       
+        # now we have not found any room numer, look for keywords
+        for word in roomKeywords.keys():
+            if message.lower().find(word) != -1:
+                return roomKeywords[word]
+        return "No room in email"
 
 # get the message:
 con = auth(user,password,imap_url)
