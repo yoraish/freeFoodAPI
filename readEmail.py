@@ -8,15 +8,54 @@ import details
 # for roomKeywords, the keys are words that might be found in emails, and the actual values are the room names that will
 # be inserted to the DB
 roomKeywords = {'kresge':'kresge',
-                'W20': 'W20',
+                'w20': 'W20',
                 'verdes': 'W20',
                 'stud': 'W20',
                 'student center': 'W20',
                 'student centre': 'W20',
                 'stata': 'stata',
+                'simmons': 'simmons',
+                'macgregor': 'macgregor',
+                'baker': 'baker',
+                'next': 'next',
+                'maseeh': 'maseeh',
+
 }
 
+foodKeywords = ['wrap',
+                'thai',
+                'beef', 
+                'rice', 
+                'salad', 
+                'popcorn',
+                'mexican',
+                'mac and cheese',
+                'mac & cheese',
+                'subway',
+                'sandwich',
+                'chicken',
+                'asian',
+                'pizza',
+                'pulled pork',
+                'pork',
+                'indian',
+                'lamb',
+                'naan',
+                'chinese',
+                'burger',
+                'corn',
+                'potato',
+                'greek',
+                'vegetables',
+                'humus',
+                'hummus',
+                'fruit',
+                'chips',
+                'muffins',
+                'sides',
+                'fried chicken',
 
+]
 cgitb.enable()
 #command below takes the arguements from the get request and puts them in some sort of a dictionary
 inDataDict = cgi.FieldStorage()
@@ -93,16 +132,14 @@ def getRoomNumberFromEmail(message, senderName):
             dashIndex =  message.find('-')
             # look for a signature in the email
             signatureStart = len(message)
-            print('<br><br><br>('+ senderName.lower() +') <br><br><br>')
-            print('<br><br><br>'+ str(senderName.lower().find('ai shaoul')) +' <br><br><br>')
+            #print('<br><br><br>('+ senderName.lower() +') <br><br><br>')
             
-            print('<br><br><br> lower the message=', message.lower())
-            print('<br><br><br> the index of the message=', signatureStart)
+            #print('<br><br><br> lower the message=', message.lower())
+            #print('<br><br><br> the index of the message=', signatureStart)
             
-            print('<br><br><br> the sender of the message=i=' + senderName + '<br><br><br>')
             if str(message.lower()).find(senderName.lower()) != -1:
                 signatureStart = str(message.lower()).find(senderName.lower())
-            print ('  sig start=' + str(signatureStart))
+            #print ('  sig start=' + str(signatureStart))
             while found == False:
                 # go to a heifen 
                 middleIndex =  dashIndex
@@ -130,57 +167,72 @@ def getRoomNumberFromEmail(message, senderName):
                 return roomKeywords[word]
         return "No room in email"
 
+def getFoodFromEmail(message):
+    if message == "Reply not shown":
+        return '[]'
+    # now if we have a valid message, go through our keyword list and append found keywords to output string (that will
+    # look like a list
+
+    outList = []
+    for key in foodKeywords:
+        if message.lower().find(key) != -1:
+            outList.append(key)
+
+    return str(outList) 
+
+
 # get the message:
 con = auth(user,password,imap_url)
 con.select('INBOX')
 message = getLatestEmail(con)
 sender = getLatestSender(con)
-print("Entire email:<br>" + message+'<br>')
 room = getRoomNumberFromEmail(message, sender)
-print("Room from email:"+str(room)+'<br>')
+#print("Room from email:"+str(room)+'<br>')
 # after getting the info, if the room number != "No room in email" then insert
 # the data to foodEmails.db, with foodTable inside (room text, time, timestamp)
-print (datetime.datetime.now())
 # check that the data is not already in the database
 #read last entry:
 example_db = "foodEmails.db"
 conn = sqlite3.connect(example_db)
 c = conn.cursor()
-things = c.execute('''SELECT * FROM foodTable ORDER BY time DESC;''').fetchone()
+things = c.execute('''SELECT * FROM freeFoodTable ORDER BY timestamp DESC;''').fetchone()
 lastRoom = things[0]
 conn.commit()
 conn.close()
+
 #now if the last room is not like the new room, add the new one to db
+# right after getting food keywords
+foods = getFoodFromEmail(message)
+
 if lastRoom != room:
     #check if room is actual number of a room
     if room != "No room in email":
-        print( "Putting into database")
+        #print( "Putting into database")
         example_db = "foodEmails.db"
         conn = sqlite3.connect(example_db)
         c = conn.cursor()
-        c.execute('''INSERT into foodTable VALUES (?,?);''',(room,datetime.datetime.now()+datetime.timedelta(hours=7)))
+        c.execute('''INSERT into freeFoodTable VALUES (?,?,?);''', (room, foods, datetime.datetime.now()))
         conn.commit()
         conn.close()
-    else:
-        print("No room number found in email, none inserted")
-else:
-    print("This room is already in the db, not inserted")
+#    else:
+#        print("No room number found in email, none inserted")
+#else:
+#    print("This room is already in the db, not inserted")
 
 # present the data nicely:
 
 example_db = "foodEmails.db"
 conn = sqlite3.connect(example_db)
 c = conn.cursor()
-things = c.execute('''SELECT * FROM foodTable ORDER BY time DESC;''').fetchall()
+things = c.execute('''SELECT * FROM freeFoodTable ORDER BY timestamp DESC;''').fetchall()
 
 # show as json
 outDict = {'data':[]}
 for line in range(3):
-    outDict['data'].append({'room': str(things[line][0]), 'time':str(things[line][1])[:19]})
+    outDict['data'].append({'room': str(things[line][0]),'food': str(things[line][1]), 'time':str(things[line][2])[:19]})
     #print ("<br><br>There's food at room "+ str(things[line][0]) + ". True to " + str(things[line][1])[:19]+"<br><br>")
 conn.commit()
 conn.close()
 
 
-print('<br><br>')
 print(outDict)
