@@ -3,59 +3,9 @@ print( "Content-type: text/html\n")
 import cgitb
 import cgi 
 import details 
-
-#globals
-# for roomKeywords, the keys are words that might be found in emails, and the actual values are the room names that will
-# be inserted to the DB
-roomKeywords = {'kresge':'kresge',
-                'w20': 'W20',
-                'verdes': 'W20',
-                'stud': 'W20',
-                'student center': 'W20',
-                'student centre': 'W20',
-                'stata': 'stata',
-                'simmons': 'simmons',
-                'macgregor': 'macgregor',
-                'baker': 'baker',
-                'next': 'next',
-                'maseeh': 'maseeh',
-
-}
-
-foodKeywords = ['wrap',
-                'thai',
-                'beef', 
-                'rice', 
-                'salad', 
-                'popcorn',
-                'mexican',
-                'mac and cheese',
-                'mac & cheese',
-                'subway',
-                'sandwich',
-                'chicken',
-                'asian',
-                'pizza',
-                'pulled pork',
-                'pork',
-                'indian',
-                'lamb',
-                'naan',
-                'chinese',
-                'burger',
-                'corn',
-                'potato',
-                'greek',
-                'vegetables',
-                'humus',
-                'hummus',
-                'fruit',
-                'chips',
-                'muffins',
-                'sides',
-                'fried chicken',
-
-]
+from keywords import foodKeywords, roomKeywords
+import json
+import ast
 cgitb.enable()
 #command below takes the arguements from the get request and puts them in some sort of a dictionary
 inDataDict = cgi.FieldStorage()
@@ -229,10 +179,12 @@ things = c.execute('''SELECT * FROM freeFoodTable ORDER BY timestamp DESC;''').f
 # show as json
 outDict = {'data':[]}
 for line in range(3):
-    outDict['data'].append({'room': str(things[line][0]),'food': str(things[line][1]), 'time':str(things[line][2])[:19]})
+    # the next line also converts the food keywords from the DB to an actual list object
+    outDict["data"].append({"room": str(things[line][0]),"food": ast.literal_eval(things[line][1]), "time":str(things[line][2])[:19]})
     #print ("<br><br>There's food at room "+ str(things[line][0]) + ". True to " + str(things[line][1])[:19]+"<br><br>")
 conn.commit()
 conn.close()
 
-
+# convert to json
+outDict = json.dumps(outDict)
 print(outDict)
