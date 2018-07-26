@@ -69,15 +69,15 @@ def getLatestSender(con):
     senderName = getSender(raw)
     return senderName
 
-#function that expects a string and spits back a string with the room number
+#function that expects a string amend spits back a string with the room number
 # will return the room number if exists in email, or "No room in email" if not found
 def getRoomNumberFromEmail(message, senderName):
      # check if the message is a reply or not
     if message == "Reply not shown":
         return "No room in email"
     # if all is good then, first, get rid of the signature, if exists
-    if message.lower().find(sender.lower()) != -1:
-        signatureStart = senderName.lower().find(message.lower())
+    if str(message.lower()).find(str(senderName.lower())) != -1:
+        signatureStart = str(message.lower()).find(str(senderName.lower()))
         message = message[:signatureStart]
     # now find a room number using regex
     roomList = re.findall('\W([A-Z,a-z]{0,2}\d{1,3}-\d{3})\W', message)
