@@ -80,8 +80,7 @@ def getRoomNumberFromEmail(message, senderName):
         signatureStart = str(message.lower()).find(str(senderName.lower()))
         message = message[:signatureStart]
     # now find a room number using regex
-    roomList = re.findall('\W([A-Z,a-z]{0,2}\d{1,3}-\d{3})\W', message)
-    print('room list=', roomList)
+    roomList = re.findall('\W*([A-Z]{0,2}\d{1,3}-\d{3})\W', message)
     # if room number was found,return it
     if len(roomList) != 0:
         return roomList[0]
