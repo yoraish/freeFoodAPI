@@ -27,7 +27,7 @@ roomKeywords = {'kresge':'kresge',
                 'lobdell': 'Lobdell',
                 'eastman': 'Eastman Court',
                 'la sala': 'La Sala de Puerto Rico',
-
+                'morss hall': 'Morss Hall',
                 }
 # add all the building numbers from 1 to 80
 for i in range (1,81):
@@ -63,8 +63,6 @@ foodKeywords = ['wrap',
                 'vegetables',
                 'humus',
                 'hummus',
-                'fruit',
-                'chips',
                 'muffins',
                 'sides',
                 'fried chicken',
