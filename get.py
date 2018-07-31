@@ -148,7 +148,7 @@ if lastRoom != room:
 example_db = "foodEmails.db"
 conn = sqlite3.connect(example_db)
 c = conn.cursor()
-things = c.execute('''SELECT * FROM freeFoodTable ORDER BY timestamp DESC;''').fetchall()
+things = c.execute('''SELECT * FROM freeFoodTable ORDER BY timestamp DESC LIMIT 5;''').fetchall()
 
 # show as json
 outDict = {'data':[]}
